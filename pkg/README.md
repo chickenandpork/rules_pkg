@@ -98,6 +98,50 @@ Here, the Debian package is built from three `pkg_tar` targets:
 `debian-data` is then used for the data content of the debian archive created by
 `pkg_deb`.
 
+<a name="basic-example"></a>
+### MacOS Example
+
+This example shows the difference to build a MacOS Flat-Package PKG of Bazel:
+
+```python
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:pkgbuild.bzl", "pkgbuild_tars")
+
+pkg_tar(
+    name = "bazel-bin",
+    strip_prefix = "/src",
+    package_dir = "/usr/local/bin",
+    srcs = ["//src:bazel"],
+    mode = "0755",
+)
+
+pkg_tar(
+    name = "bazel-tools",
+    strip_prefix = "/",
+    package_dir = "/usr/local/share/lib/bazel/tools",
+    srcs = ["//tools:package-srcs"],
+    mode = "0644",
+)
+
+# The resulting PKG should be installable by:
+#
+# sudo installer -pkg bazel.pkg -target /
+pkgbuild_tars(
+    name = "bazel",
+    tars = [ ":bazel-bin", ":bazel-tools" ],
+    package_name = "bazel",
+    version = "0.1.1",
+)
+```
+
+Here, the MacOS package is built from two `pkg_tar` targets:
+
+ - `bazel-bin` creates a tarball with the main binary (mode `0755`) in
+   `/usr/local/bin`,
+ - `bazel-tools` create a tarball with the base workspace (mode `0644`) to
+   `/usr/local/share/bazel/tools` ; the `modes` attribute let us specifies executable
+   files,
+
 <a name="roadmap"></a>
 ## Roadmap
 
